@@ -62,7 +62,13 @@ const app = express()
 // Set a port for the server to listen on
 const port = args.port || args.p || process.env.PORT || 8080
 // Load app middleware here to serve routes, accept data requests, etc.
-//
+
+
+//drop the endpoints for a04 here
+
+
+
+
 // Create and update access log
 // The morgan format below is the Apache Foundation combined format but with ISO8601 dates
 app.use(morgan(':remote-addr - :remote-user [:date[iso]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"',
@@ -102,3 +108,63 @@ process.on('SIGINT', () => {
         }    
     })
 })
+
+
+import {rps, rpsls} from './controllers/game.js'
+
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+
+
+app.get('/app/', (req, res) => {
+  res.status(200).send('200 OK');
+})
+
+app.get('/app/rps/', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.status(200).send(JSON.stringify(rps())).end();
+})
+
+app.get('/app/rpsls/', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.status(200).send(JSON.stringify(rpsls())).end();
+})
+
+//URL encoded
+// /app/rps/play?shot=rock
+app.get('/app/rps/play', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.status(200).send(JSON.stringify(rps(req.query.shot))).end();
+})
+
+app.get('/app/rpsls/play', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.status(200).send(JSON.stringify(rpsls(req.query.shot))).end();
+})
+
+//JSON
+//curl -X POST -d "shot=rock" http://localhost:5555/app/rps/play
+app.post('/app/rps/play', (req, res) => {
+  res.status(200).send(JSON.stringify(rps(req.body.shot))).end();
+})
+
+app.post('/app/rpsls/play', (req, res) => {
+  res.status(200).send(JSON.stringify(rpsls(req.body.shot))).end();
+})
+
+//:shot, allow field to be parsed
+// e.g. app/rps/play/rock
+app.get('/app/rps/play/:shot', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.status(200).send(JSON.stringify(rps(req.params.shot))).end();
+})
+
+app.get('/app/rpsls/play/:shot', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.status(200).send(JSON.stringify(rpsls(req.params.shot))).end();
+})
+
+app.get('*', (req, res) => {
+  res.status(404).send('404 NOT FOUND');
+})
+
